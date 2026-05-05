@@ -4,12 +4,16 @@ from huggingface_hub import InferenceClient
 
 st.set_page_config(page_title="Sarah - AI Assistant", layout="wide")
 
-# Initialize
+# Initialize HuggingFace Client
 @st.cache_resource
 def get_client():
+    hf_token = st.secrets.get("HF_TOKEN", "")
+    if not hf_token:
+        st.error("❌ HF_TOKEN not set in secrets!")
+        return None
     return InferenceClient(
-        "HuggingFaceH4/zephyr-7b-beta",
-        token=st.secrets.get("HF_TOKEN", "")
+        model="HuggingFaceH4/zephyr-7b-beta",
+        token=hf_token
     )
 
 client = get_client()
@@ -33,7 +37,7 @@ TASKS = {
 }
 
 # UI
-st.title("🤖 SARAH - Your Cloud AI Assistant")
+st.title("🤖 SARAH - Cloud AI Assistant")
 st.markdown("### ☁️ Access from Anywhere • 🔒 Completely Private • 💬 Fully Intelligent")
 st.markdown("---")
 
@@ -63,30 +67,32 @@ with col2:
         with st.chat_message("user"):
             st.write(user_input)
         
-        # Generate response
-        system_prompt = MOOD_PROMPTS[mood]
-        system_prompt += f"\n\nYou are helping with: {TASKS[task]}"
-        
-        messages = [{"role": "system", "content": system_prompt}]
-        for msg in st.session_state.messages[:-1]:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-        
-        try:
-            with st.chat_message("assistant"):
-                response = ""
-                placeholder = st.empty()
-                
-                for message in client.chat_completion(
-                    messages,
-                    max_tokens=1024,
-                    stream=True
-                ):
-                    if message.choices[0].delta.content:
-                        response += message.choices[0].delta.content
+        if client is None:
+            st.error("❌ Client not initialized. Check HF_TOKEN in secrets!")
+        else:
+            # Generate response
+            system_prompt = MOOD_PROMPTS[mood]
+            system_prompt += f"\n\nYou are helping with: {TASKS[task]}"
+            
+            messages = [{"role": "system", "content": system_prompt}]
+            for msg in st.session_state.messages[:-1]:
+                messages.append({"role": msg["role"], "content": msg["content"]})
+            
+            try:
+                with st.chat_message("assistant"):
+                    response = ""
+                    placeholder = st.empty()
+                    
+                    for message in client.text_generation(
+                        prompt="\n".join([f"{m['role']}: {m['content']}" for m in messages]),
+                        max_new_tokens=512,
+                        temperature=0.7
+                    ):
+                        response += message
                         placeholder.write(response)
-                
-                st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
-            st.info("💡 Tip: Make sure HF_TOKEN is set in Streamlit Secrets!")
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            except Exception as e:
+                st.error(f"❌ Error: {str(e)}")
+                st.info("💡 Make sure your HF_TOKEN is valid and has access to the model!")
