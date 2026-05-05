@@ -3,8 +3,20 @@ import google.generativeai as genai
 
 # 1. Config & Security
 st.set_page_config(page_title="Sara AI", page_icon="⚜️", layout="wide")
+
+# Check if secret exists before configuring
+if "GOOGLE_API_KEY" not in st.secrets:
+    st.error("Missing GOOGLE_API_KEY in Streamlit Secrets!")
+    st.stop()
+
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Use 'gemini-1.5-flash' explicitly
+try:
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error(f"Model Initialization Error: {e}")
+    st.stop()
 
 # 2. Luxury UI Styling
 st.markdown("""
