@@ -1,11 +1,10 @@
 import streamlit as st
 import google.generativeai as genai
-import base64
 
 # 1. PAGE SETUP
 st.set_page_config(page_title="Sara AI", layout="wide", page_icon="⚜️")
 
-# 2. PASTEL LUXURY STYLING (CSS)
+# 2. ZEN-LUXURY PASTEL STYLING
 st.markdown("""
     <style>
     /* Background & Main App */
@@ -25,50 +24,43 @@ st.markdown("""
         border-radius: 20px !important;
         padding: 15px !important;
         margin-bottom: 10px !important;
+        border: 1px solid rgba(212, 175, 55, 0.2);
     }
     
-    [data-testid="chatAvatarIcon-user"] { background-color: #D1E9FF !important; }
-    [data-testid="chatAvatarIcon-assistant"] { background-color: #D4AF37 !important; }
-    
-    /* Input Box */
-    .stChatInputContainer {
-        border-radius: 30px !important;
-        border: 1px solid #D4AF37 !important;
-    }
-    
-    /* Features Checklist */
+    /* Feature Checklist Styling */
     .feature-card {
-        background: white;
-        padding: 10px;
-        border-radius: 10px;
-        border-left: 5px solid #D4AF37;
-        margin-bottom: 5px;
-        font-size: 0.9rem;
+        background: #FFFFFF;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border-left: 4px solid #D4AF37;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 3. BRAIN INITIALIZATION (Gemini 2.5 Flash)
 if "GOOGLE_API_KEY" not in st.secrets:
-    st.error("Please add GOOGLE_API_KEY to your Secrets.")
+    st.error("Missing GOOGLE_API_KEY in Secrets.")
     st.stop()
 
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-# Using the 2026 stable Gemini 2.5 Flash
 model = genai.GenerativeModel('gemini-2.5-flash')
 
-# 4. SIDEBAR & AVATAR
+# 4. SIDEBAR & AVATAR (Updated for 2026 Syntax)
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #D4AF37;'>SARA</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #D4AF37; margin-bottom: 0;'>SARA</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 0.8rem; margin-top: 0;'>Logic Auditor</p>", unsafe_allow_html=True)
     
-    # Display your specific image
+    # Updated to width='stretch' per 2026 standards
     try:
-        st.image("avatar.png.png", use_container_width=True)
+        st.image("avatar.png.png", width='stretch')
     except:
-        st.warning("Ensure 'avatar.png.png' is uploaded to your GitHub repository.")
+        st.info("Avatar image loading...")
     
     st.markdown("---")
-    with st.expander("✨ System Features", expanded=True):
+    with st.expander("✨ App Capabilities", expanded=True):
         features = [
             "✅ Fully intelligent", "✅ Multi-model AI", "✅ Cloud-based",
             "✅ Access anywhere", "✅ Nothing on device", "✅ Completely free",
@@ -93,27 +85,24 @@ if prompt := st.chat_input("State your proposition..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        # System Instruction for Sara
+        # Sara Persona Prompt
         persona = (
-            "You are Sara, a high-end luxury logic auditor. Your tone is soft, "
-            "intelligent, and challenging. Audit the user's logic before solving."
+            "You are Sara, a high-end luxury logic auditor. Your voice is soft, "
+            "intelligent, and challenging. Audit the user's logic before solving. "
+            "Be sophisticated, helpful, and concise like Siri."
         )
         
         response = model.generate_content([persona, prompt])
         answer = response.text
         st.markdown(answer)
         
-        # 6. SOFT SIRI VOICE (JavaScript)
-        # pitch 1.2 and rate 0.9 creates that soft, soothing tone
+        # 6. SOFT SIRI VOICE (JavaScript Engine)
         js_speech = f"""
         <script>
-        var msg = new SpeechSynthesisUtterance(`{answer[:400].replace("`", "")}`);
-        msg.pitch = 1.2;
-        msg.rate = 0.95;
-        msg.volume = 0.8;
-        var voices = window.speechSynthesis.getVoices();
-        // Try to find a high-quality female voice
-        msg.voice = voices.filter(v => v.name.includes('Female') || v.name.includes('Siri'))[0];
+        var msg = new SpeechSynthesisUtterance(`{answer[:500].replace("`", "")}`);
+        msg.pitch = 1.15;
+        msg.rate = 0.92;
+        msg.volume = 0.9;
         window.speechSynthesis.speak(msg);
         </script>
         """
